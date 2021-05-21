@@ -1,6 +1,6 @@
 import math
 import openpyxl as xl
-import datetime
+from datetime import datetime
 import production_code as pc
 
 brewery_dictionary = {
@@ -25,6 +25,7 @@ class Complaint():
 		self.country = self.getCountry(sheet, r, one_country_brands)
 		self.incident_date = self.getIncidentDate(sheet, r)
 		self.production_date = self.getProductionDate(sheet, r)
+		self.age = self.getAge()
 
 	def getCustomerCode(self, sheet, r):
 		return pc.ProductionCode(sheet.cell(row = r, column = 12).value)
@@ -51,7 +52,11 @@ class Complaint():
 		return sheet.cell(row = r, column = 2).value
 
 	def getComplaintDate(self, sheet, r):
-		return sheet.cell(row = r, column = 3).value
+		complaint_date = sheet.cell(row = r, column = 3).value
+		if complaint_date == "":
+			return complaint_date
+		else:
+			return convertExcelDate(complaint_date)
 
 	def getCountry(self, sheet, r, one_country_brands):
 		if self.customer_code.validateProductionCode():
@@ -66,13 +71,31 @@ class Complaint():
 				return data_country
 
 	def getIncidentDate(self, sheet, r):
-		return sheet.cell(row = r, column = 31).value
+		incident_date = sheet.cell(row = r, column = 31).value
+		if incident_date is None:
+			return incident_date
+		else:
+			return convertExcelDate(incident_date)
 
 	def getProductionDate(self, sheet, r):
 		if self.customer_code.validateProductionCode():
 			return self.customer_code.date
 		else:
-			return sheet.cell(row = r, column = 29).value
+			production_date = sheet.cell(row = r, column = 29).value
+			if production_date is None:
+				return production_date
+			else:
+				return convertExcelDate(production_date)
+
+	def getAge(self):
+		if self.production_date is None:
+			return None
+		else:
+			if self.incident_date is not None:
+				return self.incident_date - self.production_date 
+			else:
+				return self.complaint_date - self.production_date
+
 
 def headingPrinter(sheet):
 	sheet.cell(row = 1, column = 1).value = "Case Number"
@@ -82,6 +105,7 @@ def headingPrinter(sheet):
 	sheet.cell(row = 1, column = 5).value = "Production Date"
 	sheet.cell(row = 1, column = 6).value = "Complaint Date"
 	sheet.cell(row = 1, column = 7).value = "Incident Date"
+	sheet.cell(row = 1, column = 8).value = "Age"
 
 def complaintPrinter(complaint_data, sheet, r):
 
@@ -92,6 +116,7 @@ def complaintPrinter(complaint_data, sheet, r):
 	sheet.cell(row = r, column = 5).value = complaint_data.production_date
 	sheet.cell(row = r, column = 6).value = complaint_data.complaint_date
 	sheet.cell(row = r, column = 7).value = complaint_data.incident_date
+	sheet.cell(row = r, column = 8).value = complaint_data.age
 
 def singleBreweryBrands(sheet):
 	#[brand]: [facility]
@@ -110,6 +135,8 @@ def singleCountryBrands(sheet):
 
 	return single_country_brands
 
+def convertExcelDate(excel_date):
+	return datetime.fromordinal(datetime(1900, 1, 1).toordinal() + excel_date - 2)
 
 def main():
 
