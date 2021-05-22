@@ -15,6 +15,8 @@ brewery_dictionary = {
 		"Turning Point (Stanley Park)": "Turning Point"
 	}
 
+plant_list = ["Turning Point", "Mill Street", "Archibald", "Creston", "London", "St. John's", "Halifax", "Montreal", "Edmonton", "Unconfirmed"]
+
 class Complaint():
 
 	def __init__(self, sheet, r, one_brewery_brands, one_country_brands):
@@ -61,16 +63,21 @@ class Complaint():
 			return convertExcelDate(complaint_date)
 
 	def getCountry(self, sheet, r, one_country_brands):
+		
+		data_country = sheet.cell(row = r, column = 14).value
+
 		if self.customer_code.validateProductionCode():
 			return "CANADA"
 		elif self.brand in one_country_brands.keys():
 			return one_country_brands[self.brand]
+		elif data_country == "UNITED STATES":
+			return "USA"
+		elif self.brewery not in plant_list:
+			return None
 		else:
-			data_country = sheet.cell(row = r, column = 14).value
-			if data_country == "UNITED STATES":
-				return "USA"
-			else:
-				return data_country
+			return data_country
+
+		
 
 	def getIncidentDate(self, sheet, r):
 		incident_date = sheet.cell(row = r, column = 31).value
@@ -100,7 +107,7 @@ class Complaint():
 
 	def isOverage(self):
 		if self.age is None:
-			return "Unknown"
+			return "UNKNOWN"
 		elif self.age <= 180:
 			return False
 		else:
@@ -148,7 +155,10 @@ def singleCountryBrands(sheet):
 	return single_country_brands
 
 def convertExcelDate(excel_date):
-	return datetime.fromordinal(datetime(1900, 1, 1).toordinal() + excel_date - 2)
+	if isinstance(excel_date, datetime):
+		return excel_date
+	else:
+		return datetime.fromordinal(datetime(1900, 1, 1).toordinal() + excel_date - 2)
 
 def main():
 
