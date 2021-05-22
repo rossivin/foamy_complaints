@@ -43,7 +43,7 @@ class Complaint():
 			facility = sheet.cell(row = r, column = 6).value
 			if facility in brewery_dictionary.keys():
 				return brewery_dictionary[facility]
-			elif facility == "":
+			elif facility is None:
 				return "Unconfirmed"
 			else:
 				return facility
@@ -92,9 +92,17 @@ class Complaint():
 			return None
 		else:
 			if self.incident_date is not None:
-				return self.incident_date - self.production_date 
+				return (self.incident_date - self.production_date).days
 			else:
-				return self.complaint_date - self.production_date
+				return (self.complaint_date - self.production_date).days
+
+	def isOverage(self):
+		if self.age is None:
+			return "Unknown"
+		elif self.age <= 180:
+			return False
+		else:
+			return True
 
 
 def headingPrinter(sheet):
@@ -106,6 +114,7 @@ def headingPrinter(sheet):
 	sheet.cell(row = 1, column = 6).value = "Complaint Date"
 	sheet.cell(row = 1, column = 7).value = "Incident Date"
 	sheet.cell(row = 1, column = 8).value = "Age"
+	sheet.cell(row = 1, column = 9).value = "Overage?"
 
 def complaintPrinter(complaint_data, sheet, r):
 
@@ -117,6 +126,7 @@ def complaintPrinter(complaint_data, sheet, r):
 	sheet.cell(row = r, column = 6).value = complaint_data.complaint_date
 	sheet.cell(row = r, column = 7).value = complaint_data.incident_date
 	sheet.cell(row = r, column = 8).value = complaint_data.age
+	sheet.cell(row = r, column = 9).value = complaint_data.isOverage()
 
 def singleBreweryBrands(sheet):
 	#[brand]: [facility]
