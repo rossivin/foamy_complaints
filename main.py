@@ -1,7 +1,9 @@
 import math
 import openpyxl as xl
 from datetime import datetime
+import data_correction as dc
 import production_code as pc
+
 
 brewery_dictionary = {
 		"Creston BC Canada": "Creston",
@@ -154,8 +156,11 @@ def main():
 	ws = wb["Data"]
 	ws_setup = wb["Setup"]
 	ws_destiny = wb["Polished Data"]
+	ws_corrections = wb["Manual Corrections"]
 	one_brewery_brands_dic = singleBreweryBrands(ws_setup)
 	one_country_brands_dic = singleCountryBrands(ws_setup)
+
+	dc.correction(ws_corrections, ws)
 
 	for i in range(4, ws.max_row+1):
 		print(i)
